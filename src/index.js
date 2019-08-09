@@ -16,13 +16,13 @@ const factory = (mongodbConnection, redisConnection, scopesField = 'permissions'
   const serviceAccountService = new ServiceAccountService(serviceAccountRepository)
 
   const apiKey = async (req, _res, next) => {
-    const [ strategy, token ] = req.headers['authorization'].split(' ')
+    const [strategy, token] = req.headers['authorization'].split(' ')
 
     if (strategy !== 'ApiKey') {
       return next(boom.unauthorized('Unsupported strategy token', undefined, { code: 'unsupported_strategy_token' }))
     }
 
-    const [ key, secret ] = token.split(':')
+    const [key, secret] = token.split(':')
 
     const session = await sessionService.findByKeyAndSecret(key, secret)
 
