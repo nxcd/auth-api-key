@@ -32,8 +32,6 @@ const { factory: errors } = require('@expresso/errors')
 const { factory: apiKeyFactory, scopes } = require('auth-api-key')
 
 const appFactory = app((app, config, environment) => {
-  const { jwt, scope, types } = auth.factory(config)
-
   const { mongodbConnection, redisConnection } = await database.factory(config.database)
 
   const { apiKey } = apiKeyFactory(mongodbConnection, redisConnection, config.apiKey)
