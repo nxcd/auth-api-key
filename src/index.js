@@ -16,13 +16,25 @@ const factory = (mongodbConnection, redisConnection, scopesField = 'permissions'
   const serviceAccountService = new ServiceAccountService(serviceAccountRepository)
 
   const apiKey = async (req, _res, next) => {
+    if (!req.headers['authorization']) {
+      return next(boom.unauthorized('Missing token', undefined, { code: 'missing_token' }))
+    }
+
     const [strategy, token] = req.headers['authorization'].split(' ')
 
+    if (!token) {
+      return next(boom.unauthorized('Invalid authorization format. Expected: "Authorization: <STRATEGY> <TOKEN>"', undefined, { code: 'invalid_authorization_format' }))
+    }
+
     if (strategy !== 'ApiKey') {
-      return next(boom.unauthorized('Unsupported strategy token', undefined, { code: 'unsupported_strategy_token' }))
+      return next(boom.unauthorized('Unsupported authorization strategy', undefined, { code: 'unsupported_strategy_token' }))
     }
 
     const [key, secret] = token.split(':')
+
+    if (!secret) {
+      return next(boom.unauthorized('Invalid token format', undefined, { code: 'invalid_token_format' }))
+    }
 
     const session = await sessionService.findByKeyAndSecret(key, secret)
 
