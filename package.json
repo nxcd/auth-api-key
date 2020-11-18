@@ -1,6 +1,6 @@
 {
   "name": "@nxcd/auth-api-key",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A express middleware to authentication by api-key",
   "main": "src/index.js",
   "scripts": {
