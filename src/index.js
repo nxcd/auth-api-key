@@ -8,9 +8,16 @@ const ServiceAccountRepository = require('./infrastructure/repositories/ServiceA
 const SessionService = require('./services/Session')
 const ServiceAccountService = require('./services/ServiceAccount')
 
-const factory = (mongodbConnection, redisConnection, scopesField = 'permissions') => {
-  const sessionRepository = new SessionRepository(redisConnection, { })
-  const serviceAccountRepository = new ServiceAccountRepository(mongodbConnection, {})
+const factory = (mongodbConnection, redisConnection, configs = {}) => {
+  const {
+    scopesField = 'permissions',
+    sessionRepositoryConfig = {},
+    serviceAccountRepositoryConfig = {},
+    secretHashFn = (secret) => secret
+  } = configs
+
+  const sessionRepository = new SessionRepository(redisConnection, sessionRepositoryConfig)
+  const serviceAccountRepository = new ServiceAccountRepository(mongodbConnection, serviceAccountRepositoryConfig)
 
   const sessionService = new SessionService(sessionRepository)
   const serviceAccountService = new ServiceAccountService(serviceAccountRepository)
@@ -36,10 +43,12 @@ const factory = (mongodbConnection, redisConnection, scopesField = 'permissions'
       return next(boom.unauthorized('Invalid token format', undefined, { code: 'invalid_token_format' }))
     }
 
-    const session = await sessionService.findByKeyAndSecret(key, secret)
+    const secretHash = secretHashFn(secret)
+
+    const session = await sessionService.findByKeyAndSecret(key, secretHash)
 
     if (!session) {
-      const serviceAccount = await serviceAccountService.findByKeyAndSecret(key, secret)
+      const serviceAccount = await serviceAccountService.findByKeyAndSecret(key, secretHash)
 
       if (!serviceAccount) {
         return next(boom.unauthorized('Invalid api-key', undefined, { code: 'invalid_api_key' }))
@@ -47,7 +56,7 @@ const factory = (mongodbConnection, redisConnection, scopesField = 'permissions'
 
       const scopes = serviceAccount[scopesField]
 
-      await sessionService.create(key, secret, scopes.join(','))
+      await sessionService.create(key, secretHash, scopes.join(','))
 
       Object.defineProperty(req, 'user', {
         value: { id: key, strategy, token, scopes },
