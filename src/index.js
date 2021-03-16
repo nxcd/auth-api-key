@@ -58,8 +58,8 @@ const factory = (mongodbConnection, redisConnection, configs = {}) => {
 
       await sessionService.create(key, secretHash, scopes.join(','))
 
-      Object.defineProperty(req, 'user', {
-        value: { id: key, strategy, token, scopes },
+      Object.defineProperty(req, 'serviceAccount', {
+        value: { id: key, strategy, token, scopes, data },
         writable: false
       })
 
@@ -68,8 +68,8 @@ const factory = (mongodbConnection, redisConnection, configs = {}) => {
 
     const scopes = session.split(',')
 
-    Object.defineProperty(req, 'user', {
-      value: { id: key, strategy, token, scopes },
+    Object.defineProperty(req, 'serviceAccount', {
+      value: { id: key, strategy, token, scopes, data },
       writable: false
     })
 
