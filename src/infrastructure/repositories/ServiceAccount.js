@@ -40,7 +40,11 @@ class ServiceAccountRepository {
       return null
     }
 
-    return serviceAccount[this._projection]
+    const serviceAccountProjection = serviceAccount[this._projection]
+
+    const serviceAccountString = JSON.stringify(serviceAccountProjection)
+
+    return JSON.parse(serviceAccountString)
   }
 }
 

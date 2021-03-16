@@ -15,8 +15,8 @@ class SessionService {
     return session
   }
 
-  async create (key, secret, scopes) {
-    await this._repository.create(key, secret, scopes)
+  async create (key, secret, serviceAccount) {
+    await this._repository.create(key, secret, serviceAccount)
   }
 }
 

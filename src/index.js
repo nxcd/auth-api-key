@@ -45,9 +45,9 @@ const factory = (mongodbConnection, redisConnection, configs = {}) => {
 
     const secretHash = secretHashFn(secret)
 
-    const session = await sessionService.findByKeyAndSecret(key, secretHash)
+    const serviceAccountSession = await sessionService.findByKeyAndSecret(key, secretHash)
 
-    if (!session) {
+    if (!serviceAccountSession) {
       const serviceAccount = await serviceAccountService.findByKeyAndSecret(key, secretHash)
 
       if (!serviceAccount) {
@@ -56,20 +56,34 @@ const factory = (mongodbConnection, redisConnection, configs = {}) => {
 
       const scopes = serviceAccount[scopesField]
 
-      await sessionService.create(key, secretHash, scopes.join(','))
+      await sessionService.create(key, secretHash, serviceAccount)
 
       Object.defineProperty(req, 'serviceAccount', {
-        value: { id: key, strategy, token, scopes, data },
+        value: {
+          id: key,
+          urn: `service-account:${key}`,
+          strategy,
+          token,
+          scopes,
+          data: { ...serviceAccount }
+        },
         writable: false
       })
 
       return next()
     }
 
-    const scopes = session.split(',')
+    const scopes = serviceAccountSession[scopesField]
 
     Object.defineProperty(req, 'serviceAccount', {
-      value: { id: key, strategy, token, scopes, data },
+      value: {
+        id: key,
+        urn: `service-account:${key}`,
+        strategy,
+        token,
+        scopes,
+        dataaa: { ...serviceAccountSession }
+      },
       writable: false
     })
 

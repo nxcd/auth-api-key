@@ -8,11 +8,11 @@ const scopes = (expected) => {
   }
 
   return (req, _res, next) => {
-    if (!req.user || !req.user.scopes || !req.user.scopes.length) {
+    if (!req.serviceAccount || !req.serviceAccount.scopes || !req.serviceAccount.scopes.length) {
       return next(boom.unauthorized('authorization token is missing or has an invalid scope grant'))
     }
 
-    if (!isPathInScope(expected, req.user.scopes)) {
+    if (!isPathInScope(expected, req.serviceAccount.scopes)) {
       const message = format('the following permissions are required: %s', expected)
 
       return next(boom.unauthorized(message, undefined, { code: 'insufficient_permissions' }))
