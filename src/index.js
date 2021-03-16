@@ -8,6 +8,17 @@ const ServiceAccountRepository = require('./infrastructure/repositories/ServiceA
 const SessionService = require('./services/Session')
 const ServiceAccountService = require('./services/ServiceAccount')
 
+const getScopes = (scopesField, serviceAccount) => {
+  const scopes = scopesField.split('.')
+    .reduce((serviceAccountProjection, key) => {
+      if (!serviceAccountProjection) return serviceAccount[key]
+
+      return serviceAccountProjection[key]
+    }, null)
+
+  return scopes
+}
+
 const factory = (mongodbConnection, redisConnection, configs = {}) => {
   const {
     scopesField = 'permissions',
@@ -54,12 +65,7 @@ const factory = (mongodbConnection, redisConnection, configs = {}) => {
         return next(boom.unauthorized('Invalid api-key', undefined, { code: 'invalid_api_key' }))
       }
 
-      const scopes = scopesField.split('.')
-        .reduce((serviceAccountProjection, key) => {
-          if (!serviceAccountProjection) return serviceAccount[key]
-
-          return serviceAccountProjection[key]
-        }, null)
+      const scopes = getScopes(scopesField, serviceAccount)
 
       await sessionService.create(key, secretHash, serviceAccount)
 
@@ -78,7 +84,7 @@ const factory = (mongodbConnection, redisConnection, configs = {}) => {
       return next()
     }
 
-    const scopes = serviceAccountSession[scopesField]
+    const scopes = getScopes(scopesField, serviceAccountSession)
 
     Object.defineProperty(req, 'serviceAccount', {
       value: {
