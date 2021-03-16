@@ -54,7 +54,12 @@ const factory = (mongodbConnection, redisConnection, configs = {}) => {
         return next(boom.unauthorized('Invalid api-key', undefined, { code: 'invalid_api_key' }))
       }
 
-      const scopes = serviceAccount[scopesField]
+      const scopes = scopesField.split('.')
+        .reduce((serviceAccountProjection, key) => {
+          if (!serviceAccountProjection) return serviceAccount[key]
+
+          return serviceAccountProjection[key]
+        }, null)
 
       await sessionService.create(key, secretHash, serviceAccount)
 

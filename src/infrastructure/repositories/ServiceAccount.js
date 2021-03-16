@@ -34,15 +34,13 @@ class ServiceAccountRepository {
       }
     }
 
-    const serviceAccount = await this._collection.findOne(query, { projection: { [this._projection]: 1 } })
+    const serviceAccount = await this._collection.findOne(query, { projection: this._projection })
 
     if (!serviceAccount) {
       return null
     }
 
-    const serviceAccountProjection = serviceAccount[this._projection]
-
-    const serviceAccountString = JSON.stringify(serviceAccountProjection)
+    const serviceAccountString = JSON.stringify(serviceAccount)
 
     return JSON.parse(serviceAccountString)
   }
