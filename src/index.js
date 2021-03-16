@@ -82,7 +82,7 @@ const factory = (mongodbConnection, redisConnection, configs = {}) => {
         strategy,
         token,
         scopes,
-        dataaa: { ...serviceAccountSession }
+        data: { ...serviceAccountSession }
       },
       writable: false
     })
